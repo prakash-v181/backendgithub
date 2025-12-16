@@ -21,6 +21,12 @@ const mainRouter = require("./routes/main.router");
 
 const PORT = process.env.PORT || 3002;
 
+/* ================= ALLOWED ORIGINS (CORS) ================= */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://frontendgithubpr.vercel.app",
+];
+
 /* ================= MongoDB ================= */
 async function connectMongo() {
   try {
@@ -49,16 +55,23 @@ async function startServer() {
 
   await connectMongo();
 
-  const app = express(); // ✅ app exists ONLY here
+  const app = express();
 
   /* -------- Middleware -------- */
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
+  /* -------- CORS (FIXED FOR VERCEL + LOCAL) -------- */
   app.use(
     cors({
-      origin: "http://localhost:5173",
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true); // Postman / server calls
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error("CORS not allowed"));
+      },
       credentials: true,
     })
   );
@@ -69,7 +82,7 @@ async function startServer() {
   /* -------- Routes -------- */
   app.use("/api", mainRouter);
 
-  /* -------- Root health route -------- */
+  /* -------- Root route -------- */
   app.get("/", (req, res) => {
     res.json({
       status: "Backend running successfully 🚀",
@@ -77,13 +90,18 @@ async function startServer() {
     });
   });
 
+  /* -------- Health check -------- */
   app.get("/health", (_, res) => {
     res.json({ ok: true });
   });
 
-  /* -------- GLOBAL ERROR HANDLER (ONE ONLY) -------- */
+  /* -------- GLOBAL ERROR HANDLER -------- */
   app.use((err, req, res, next) => {
     console.error("GLOBAL ERROR:", err.message);
+
+    if (err.message === "CORS not allowed") {
+      return res.status(403).json({ message: "CORS blocked" });
+    }
 
     if (err.message === "File type not allowed") {
       return res.status(400).json({ message: err.message });
@@ -104,20 +122,21 @@ async function startServer() {
 
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: allowedOrigins,
       credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
     console.log("🔌 Socket connected:", socket.id);
+
     socket.on("disconnect", () => {
       console.log("❌ Socket disconnected:", socket.id);
     });
   });
 
   server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
   });
 }
 
