@@ -49,7 +49,7 @@ async function startServer() {
 
   await connectMongo();
 
-  const app = express();
+  const app = express(); // ✅ app exists ONLY here
 
   /* -------- Middleware -------- */
   app.use(express.json());
@@ -69,19 +69,23 @@ async function startServer() {
   /* -------- Routes -------- */
   app.use("/api", mainRouter);
 
+  /* -------- Root health route -------- */
+  app.get("/", (req, res) => {
+    res.json({
+      status: "Backend running successfully 🚀",
+      time: new Date().toISOString(),
+    });
+  });
+
   app.get("/health", (_, res) => {
     res.json({ ok: true });
   });
 
-  /* -------- GLOBAL ERROR HANDLER (ONLY ONE) -------- */
+  /* -------- GLOBAL ERROR HANDLER (ONE ONLY) -------- */
   app.use((err, req, res, next) => {
     console.error("GLOBAL ERROR:", err.message);
 
-    if (err.message.includes("File type not allowed")) {
-      return res.status(400).json({ message: err.message });
-    }
-
-    if (err.message.includes("Repository ID")) {
+    if (err.message === "File type not allowed") {
       return res.status(400).json({ message: err.message });
     }
 
@@ -121,11 +125,4 @@ async function startServer() {
 startServer().catch((err) => {
   console.error("❌ Startup error:", err);
   process.exit(1);
-});
-
-app.get("/", (req, res) => {
-  res.json({
-    status: "Backend running successfully 🚀",
-    time: new Date().toISOString(),
-  });
 });
