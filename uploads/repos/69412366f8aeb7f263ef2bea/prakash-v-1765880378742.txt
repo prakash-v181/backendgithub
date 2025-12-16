@@ -1,0 +1,111 @@
+Prakash V
+
+Junior Full-Stack Developer (MERN)
+
+📍 Bidar, Karnataka, India
+📞 +91 8050458999
+✉️ prakashtare181@gmail.com
+
+🔗 GitHub | LinkedIn | Portfolio
+
+PROFESSIONAL SUMMARY
+
+Junior Full-Stack Developer with hands-on experience in MERN stack through internships and real-world projects. Skilled in building responsive web applications, REST APIs, real-time features, and AI-integrated applications. Passionate about writing clean, efficient code and continuously learning modern technologies.
+
+TECHNICAL SKILLS
+
+Languages: JavaScript, HTML5, CSS3, Core Java
+Frontend: React.js, Redux, Tailwind CSS, Bootstrap, Material UI
+Backend: Node.js, Express.js
+Database: MongoDB, MySQL
+APIs & Real-Time: REST APIs, WebRTC, Socket.io
+Tools: Git, GitHub, VS Code, Postman, Figma, Chrome DevTools
+
+PROJECTS
+ChatGPT Clone – AI Chat Application
+
+Developed an AI-powered chat application with real-time responses
+
+Integrated OpenAI API for conversational AI
+
+Implemented authentication and chat history storage
+
+Designed responsive UI for seamless user experience
+Tech: React.js, Node.js, Express.js, OpenAI API, MongoDB
+
+Video Call Application
+
+Built a real-time video calling application using WebRTC
+
+Implemented peer-to-peer audio/video communication
+
+Used Socket.io for signaling and room-based connections
+
+Ensured low-latency and stable video calls
+Tech: WebRTC, Socket.io, React.js, Node.js, Express.js
+
+Airbnb Clone – Travel & Listing Platform
+
+Developed a full-stack travel and property listing platform
+
+Implemented booking and property management features
+
+Built REST APIs and integrated MongoDB for data storage
+
+Created responsive UI using Bootstrap
+Tech: Node.js, Express.js, MongoDB, Mongoose, Bootstrap
+
+Zerodha Clone – Stock Dashboard
+
+Designed a responsive stock analysis dashboard
+
+Built modern UI components using React and Material UI
+
+Integrated backend APIs for data handling
+Tech: React.js, Material UI, Node.js, Express.js, MongoDB
+
+Real-Time Weather Application
+
+Developed a weather application supporting 50+ locations
+
+Integrated OpenWeatherMap API for live weather data
+
+Focused on performance and clean UI design
+Tech: React.js, REST API, CSS
+
+WORK EXPERIENCE
+Full-Stack Developer Intern
+
+Main Flow Services and Technologies Pvt. Ltd., Bengaluru
+Jan 2025 – Jul 2025
+
+Developed responsive web applications using React.js and Node.js
+
+Built RESTful APIs and integrated MongoDB
+
+Improved user engagement by 15%
+
+Collaborated using Git and GitHub
+
+AICTE Student Intern
+
+Edunet Foundation, Bengaluru
+Apr 2025 – May 2025
+
+Developed a CNN model to classify plastic waste images
+
+Worked with Python datasets and AI/ML concepts
+
+EDUCATION
+
+Bachelor of Engineering – Computer Science & Engineering
+Visvesvaraya Technological University (VTU)
+CGPA: 8.1
+
+Diploma – Computer Science & Engineering
+Government Polytechnic College, Aurad B
+Percentage: 67
+
+LANGUAGES
+
+Kannada | English | Hindi | Telugu

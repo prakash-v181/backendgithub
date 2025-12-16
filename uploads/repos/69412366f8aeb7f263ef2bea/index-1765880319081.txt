@@ -1,0 +1,111 @@
+// index.js - simple CLI for add / commit operations
+// Usage examples:
+//   node index.js add hello.txt
+//   node index.js commit "my commit message"
+
+const fs = require('fs');
+const path = require('path');
+
+const repoDir = path.resolve(__dirname); // backend folder
+const args = process.argv.slice(2);
+
+if (args.length === 0) {
+  console.log('Usage: node index.js <command> [args]');
+  console.log('Commands: add <filename>, commit "<message>", status');
+  process.exit(0);
+}
+
+const cmd = args[0];
+
+function addFile(filename) {
+  if (!filename) {
+    console.error('add: missing filename');
+    process.exit(1);
+  }
+  const filePath = path.join(repoDir, filename);
+  if (fs.existsSync(filePath)) {
+    console.log(`File already exists: ${filename}`);
+  } else {
+    fs.writeFileSync(filePath, '', 'utf8');
+    console.log(`Added file: ${filename}`);
+  }
+  // record staging (simple)
+  const stageFile = path.join(repoDir, '.staging');
+  let staged = [];
+  if (fs.existsSync(stageFile)) {
+    staged = JSON.parse(fs.readFileSync(stageFile, 'utf8') || '[]');
+  }
+  if (!staged.includes(filename)) staged.push(filename);
+  fs.writeFileSync(stageFile, JSON.stringify(staged, null, 2), 'utf8');
+}
+
+function commit(message) {
+  if (!message) {
+    console.error('commit: missing message. Usage: node index.js commit "message"');
+    process.exit(1);
+  }
+  const stageFile = path.join(repoDir, '.staging');
+  let staged = [];
+  if (fs.existsSync(stageFile)) {
+    staged = JSON.parse(fs.readFileSync(stageFile, 'utf8') || '[]');
+  }
+
+  if (staged.length === 0) {
+    console.log('Nothing to commit. Staging area is empty.');
+    return;
+  }
+
+  const commitsFile = path.join(repoDir, 'commits.log');
+  const commitRecord = {
+    message,
+    files: staged,
+    date: new Date().toISOString()
+  };
+
+  let log = [];
+  if (fs.existsSync(commitsFile)) {
+    try {
+      log = JSON.parse(fs.readFileSync(commitsFile, 'utf8') || '[]');
+    } catch (e) {
+      // fallback to array if file not JSON yet
+      log = [];
+    }
+  }
+  log.push(commitRecord);
+  fs.writeFileSync(commitsFile, JSON.stringify(log, null, 2), 'utf8');
+
+  // clear staging
+  fs.writeFileSync(stageFile, JSON.stringify([], null, 2), 'utf8');
+
+  console.log('Committed:', message);
+  console.log('Files:', staged.join(', '));
+}
+
+function status() {
+  const stageFile = path.join(repoDir, '.staging');
+  let staged = [];
+  if (fs.existsSync(stageFile)) {
+    staged = JSON.parse(fs.readFileSync(stageFile, 'utf8') || '[]');
+  }
+  console.log('Staged files:', staged.length ? staged.join(', ') : '(none)');
+  const commitsFile = path.join(repoDir, 'commits.log');
+  if (fs.existsSync(commitsFile)) {
+    const log = JSON.parse(fs.readFileSync(commitsFile, 'utf8') || '[]');
+    console.log(`Commits: ${log.length}`);
+  } else {
+    console.log('Commits: 0');
+  }
+}
+
+if (cmd === 'add') {
+  addFile(args[1]);
+} else if (cmd === 'commit') {
+  // commit message could be multiple args; join them
+  const msg = args.slice(1).join(' ').trim();
+  commit(msg);
+} else if (cmd === 'status') {
+  status();
+} else {
+  console.error('Unknown command:', cmd);
+  process.exit(1);
+}
