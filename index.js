@@ -6,7 +6,7 @@ require("dotenv").config({
 
 console.log(
   "ENV CHECK ON START (JWT_SECRET_KEY):",
-  process.env.JWT_SECRET_KEY
+  !!process.env.JWT_SECRET_KEY
 );
 
 /* ================= IMPORTS ================= */
@@ -19,25 +19,23 @@ const { Server } = require("socket.io");
 
 const mainRouter = require("./routes/main.router");
 
+/* ================= PORT ================= */
 const PORT = process.env.PORT || 3002;
 
-/* ================= ALLOWED ORIGINS (CORS) ================= */
+/* ================= ALLOWED FRONTEND ORIGINS ================= */
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://frontendgithubpr.vercel.app",
+  "http://localhost:5173",              // local dev
+  "https://frontendgithubpr.vercel.app" // Vercel frontend
 ];
 
 /* ================= MongoDB ================= */
 async function connectMongo() {
   try {
-    const uri = process.env.MONGO_URI;
-
-    if (!uri) {
-      console.error("❌ MONGO_URI missing in .env");
-      process.exit(1);
+    if (!process.env.MONGO_URI) {
+      throw new Error("MONGO_URI missing");
     }
 
-    await mongoose.connect(uri);
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
   } catch (err) {
     console.error("❌ MongoDB connection failed:", err.message);
@@ -47,7 +45,6 @@ async function connectMongo() {
 
 /* ================= START SERVER ================= */
 async function startServer() {
-  // 🔐 JWT check
   if (!process.env.JWT_SECRET_KEY) {
     console.error("❌ JWT_SECRET_KEY missing in environment");
     process.exit(1);
@@ -62,10 +59,10 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
-  /* -------- CORS (FIXED FOR VERCEL + LOCAL) -------- */
+  /* -------- CORS (FINAL & CORRECT) -------- */
   app.use(
     cors({
-      origin: function (origin, callback) {
+      origin: (origin, callback) => {
         if (!origin) return callback(null, true); // Postman / server calls
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
@@ -82,7 +79,7 @@ async function startServer() {
   /* -------- Routes -------- */
   app.use("/api", mainRouter);
 
-  /* -------- Root route -------- */
+  /* -------- Root -------- */
   app.get("/", (req, res) => {
     res.json({
       status: "Backend running successfully 🚀",
@@ -90,21 +87,17 @@ async function startServer() {
     });
   });
 
-  /* -------- Health check -------- */
+  /* -------- Health -------- */
   app.get("/health", (_, res) => {
     res.json({ ok: true });
   });
 
-  /* -------- GLOBAL ERROR HANDLER -------- */
+  /* -------- Global error handler -------- */
   app.use((err, req, res, next) => {
     console.error("GLOBAL ERROR:", err.message);
 
     if (err.message === "CORS not allowed") {
       return res.status(403).json({ message: "CORS blocked" });
-    }
-
-    if (err.message === "File type not allowed") {
-      return res.status(400).json({ message: err.message });
     }
 
     res.status(500).json({
@@ -129,10 +122,6 @@ async function startServer() {
 
   io.on("connection", (socket) => {
     console.log("🔌 Socket connected:", socket.id);
-
-    socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected:", socket.id);
-    });
   });
 
   server.listen(PORT, () => {
