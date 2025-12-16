@@ -122,3 +122,10 @@ startServer().catch((err) => {
   console.error("❌ Startup error:", err);
   process.exit(1);
 });
+
+app.get("/", (req, res) => {
+  res.json({
+    status: "Backend running successfully 🚀",
+    time: new Date().toISOString(),
+  });
+});
