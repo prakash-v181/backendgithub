@@ -24,8 +24,9 @@ const PORT = process.env.PORT || 3002;
 
 /* ================= ALLOWED FRONTEND ORIGINS ================= */
 const allowedOrigins = [
-  "http://localhost:5173",              // local dev
-  "https://frontendgithubpr.vercel.app" // Vercel frontend
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://prakashgithubsangvi.vercel.app" // ✅ YOUR REAL VERCEL URL
 ];
 
 /* ================= MongoDB ================= */
@@ -54,32 +55,40 @@ async function startServer() {
 
   const app = express();
 
-  /* -------- Middleware -------- */
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
-
-  /* -------- CORS (FINAL & CORRECT) -------- */
+  /* ================= CORS (FIXED & PRODUCTION SAFE) ================= */
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin) return callback(null, true); // Postman / server calls
+        // allow server-to-server & Postman
+        if (!origin) return callback(null, true);
+
         if (allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
+
         return callback(new Error("CORS not allowed"));
       },
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     })
   );
 
-  /* -------- Static uploads -------- */
+  // ✅ REQUIRED for browser preflight requests
+  app.options("*", cors());
+
+  /* ================= MIDDLEWARE ================= */
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
+
+  /* ================= STATIC FILES ================= */
   app.use("/uploads", express.static("uploads"));
 
-  /* -------- Routes -------- */
+  /* ================= ROUTES ================= */
   app.use("/api", mainRouter);
 
-  /* -------- Root -------- */
+  /* ================= ROOT ================= */
   app.get("/", (req, res) => {
     res.json({
       status: "Backend running successfully 🚀",
@@ -87,12 +96,12 @@ async function startServer() {
     });
   });
 
-  /* -------- Health -------- */
+  /* ================= HEALTH ================= */
   app.get("/health", (_, res) => {
     res.json({ ok: true });
   });
 
-  /* -------- Global error handler -------- */
+  /* ================= ERROR HANDLER ================= */
   app.use((err, req, res, next) => {
     console.error("GLOBAL ERROR:", err.message);
 
@@ -105,12 +114,12 @@ async function startServer() {
     });
   });
 
-  /* -------- 404 -------- */
+  /* ================= 404 ================= */
   app.use((req, res) => {
     res.status(404).json({ message: "Route not found" });
   });
 
-  /* -------- HTTP + Socket.IO -------- */
+  /* ================= HTTP + SOCKET.IO ================= */
   const server = http.createServer(app);
 
   const io = new Server(server, {
