@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
-const User = require("../models/userModel");
+const User = require("../models/User"); // ✅ FIXED (case-sensitive)
 
 module.exports = async function authMiddleware(req, res, next) {
   try {
@@ -14,7 +14,7 @@ module.exports = async function authMiddleware(req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-    // 🔐 Safety check
+    // Safety check
     if (!mongoose.Types.ObjectId.isValid(decoded.id)) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
@@ -29,6 +29,6 @@ module.exports = async function authMiddleware(req, res, next) {
     next();
   } catch (err) {
     console.error("❌ AUTH MIDDLEWARE ERROR:", err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };

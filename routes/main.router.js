@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authRoutes = require("./auth.routes");
 const repoRoutes = require("./repo.router");
-const fileRoutes = require("./file.routes"); // ✅ ADD THIS
+const fileRoutes = require("./file.routes");
 
 // Auth routes
 router.use("/auth", authRoutes);
@@ -12,9 +12,11 @@ router.use("/auth", authRoutes);
 router.use("/repos", repoRoutes);
 
 // File upload & fetch routes
-router.use("/", fileRoutes); // ✅ IMPORTANT
+router.use("/", fileRoutes);
 
 module.exports = router;
+
+
 
 
 // const express = require("express");
