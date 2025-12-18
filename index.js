@@ -22,13 +22,6 @@ const mainRouter = require("./routes/main.router");
 /* ================= PORT ================= */
 const PORT = process.env.PORT || 3002;
 
-/* ================= ALLOWED FRONTEND ORIGINS ================= */
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://prakashgithubsangvi.vercel.app" // ✅ YOUR REAL VERCEL URL
-];
-
 /* ================= MongoDB ================= */
 async function connectMongo() {
   try {
@@ -55,14 +48,23 @@ async function startServer() {
 
   const app = express();
 
-  /* ================= CORS (FIXED & PRODUCTION SAFE) ================= */
+  /* ================= CORS (FINAL & CORRECT) ================= */
   app.use(
     cors({
       origin: (origin, callback) => {
-        // allow server-to-server & Postman
+        // Allow server-to-server, Postman, Render health checks
         if (!origin) return callback(null, true);
 
-        if (allowedOrigins.includes(origin)) {
+        // Allow local development
+        if (
+          origin.startsWith("http://localhost:5173") ||
+          origin.startsWith("http://localhost:3000")
+        ) {
+          return callback(null, true);
+        }
+
+        // ✅ Allow ALL Vercel deployments (preview + production)
+        if (origin.endsWith(".vercel.app")) {
           return callback(null, true);
         }
 
@@ -124,7 +126,12 @@ async function startServer() {
 
   const io = new Server(server, {
     cors: {
-      origin: allowedOrigins,
+      origin: (origin, callback) => {
+        if (!origin || origin.endsWith(".vercel.app")) {
+          return callback(null, true);
+        }
+        callback(new Error("Socket CORS blocked"));
+      },
       credentials: true,
     },
   });
